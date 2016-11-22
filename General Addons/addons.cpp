@@ -8,6 +8,9 @@ int ImageSetColor(int id, unsigned int color);
 int ImageSetPos(int id, int pos);
 int ImageUpdate(int id, char* location);
 
+// -- TextDraw --
+int TextDrawUseCustomFont(int textdrawid, char* location);
+
 // -- Hud --
 int ToggleHUDComponent(int componentid, bool toggle);
 int ToggleHUDComponentForPlayer(int playerid, int componentid, bool toggle);
@@ -15,12 +18,22 @@ int ToggleHUDComponentForPlayer(int playerid, int componentid, bool toggle);
 // -- Client --
 // int GCI(int playerid);
 //
+int GetPlayerCountry(int cid);
+//
+int AllowPlayerScreenShot(int playerid, bool toggle);
 int TakePlayerScreenshot(int playerid);
 int ToggleClientCommand(int playerid, char* command, bool toggle);
 int IsPlayerDisconnected(char* szName);
+//
+int SetPlayerGameSpeed(int playerid, float speed);
 /*
 native SetPlayerGravity(playerid, Float:gravity);
 native Float:GetGravity();
+//
+native GetPlayerScreenResolution(playerid, resolution);
+//
+native GetPlayerSize(playerid);
+native SetPlayerSize(playerid, size);  / forward OnPlayerChangeSize(playerid, newsize, oldsize); 
 */
 
 // -- Vehicles --
@@ -29,6 +42,24 @@ int setPlayerVehicleComponent(struct vehicle_info *pComponent);
  // ...
 }
 
+/*
+
+*/
+// forward OnPlayerReconnect(playerid);
+int CGameMode::OnPlayerReconnect(cell playerid)
+{
+        CHECK_INIT();
+
+        int idx;
+        cell ret = 0;
+
+        if (!amx_FindPublic(&m_amx, "OnPlayerReconnect", &idx))
+        {
+                amx_Push(&m_amx, playerid);
+                amx_Exec(&m_amx, &ret, idx);
+        }
+        return (int)ret;
+}
 
 // forward OnClientBanned(playerid, serialid);
 int CGameMode::OnClientBanned(cell playerid, cell clientid)
