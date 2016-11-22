@@ -34,4 +34,4 @@ format( string, 64, "%s", MakeChatboxLink("checkme", myLink);
 
 
 // -- For game files --
-native GetModuleHandle(file[]);
+native GetModuleHandle(file[]); 
