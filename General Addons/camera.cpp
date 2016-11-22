@@ -8,8 +8,12 @@
 // -- Chat --
 /*
 native MakeChatboxLink(text[], linkdata[])
-native OnPlayerClickChatboxLink(playerid, fromplayer, linkdata[])
 
+/*
+forward OnPlayerClickChatboxLink(playerid, fromplayer, linkdata[])
+*/
+
+/*
 format( string, 64, "%s", MakeChatboxLink("checkme", myLink);
 */
 
