@@ -2,7 +2,17 @@
 	-- FPS Mode --
 */
 	int GetPlayerCameraID(int playerid, int camid);
+	int SetPlayerCameraID(int playerid, int camid);
 //
+
+// -- Chat --
+/*
+native MakeChatboxLink(text[], linkdata[])
+native OnPlayerClickChatboxLink(playerid, fromplayer, linkdata[])
+
+format( string, 64, "%s", MakeChatboxLink("checkme", myLink);
+*/
+
 
 // -- Client check debug --
 //
