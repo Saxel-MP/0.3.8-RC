@@ -88,13 +88,17 @@ int CGameMode::OnPlayerPushKey(cell playerid, cell key)
 
         if (!amx_FindPublic(&m_amx, "OnPlayerPushKey", &idx))
         {
-            	amx_Push(&m_amx, amx_ftoc( keys ) );
+            	amx_Push(&m_amx, amx_ftoc( key ) );
                 amx_Push(&m_amx, amx_ftoc( playerid ) );
                 amx_Exec(&m_amx, &ret, idx);
         }
         return (int)ret;
 }
 //
+
+/*
+native GetVehicleNumberPlate(vehicleid);
+*/
 
 // forward OnVehicleCrashVehicle(pveh, iveh);
 int CGameMode::OnVehicleCrashVehicle(cell pveh, cell iveh)
