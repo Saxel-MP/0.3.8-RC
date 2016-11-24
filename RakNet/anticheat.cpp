@@ -47,4 +47,4 @@ void CNetGame::AddBan(char * nick, char * ip_mask, char * reason)
 	fclose(fileBanList);
 
 	delete [] s;
-}
+} 
