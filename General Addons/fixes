@@ -1,0 +1,241 @@
+// ACTORS
+int CActorPool::FindNearestToLocalPlayerPed()
+{
+	float fLeastDistance=10000.0f;
+	float fThisDistance;
+	ACTORID ClosestSoFar=INVALID_ACTOR_ID;
+
+	ACTORID x=0;
+	while(x < MAX_ACTORS) {
+		if(GetSlotState(x)) {
+			fThisDistance = m_pActors[x]->GetAtPed()->GetDistanceFromLocalPlayerPed();
+			if(fThisDistance < fLeastDistance) {
+				fLeastDistance = fThisDistance;
+				ClosestSoFar = x;
+			}
+		}
+		x++;
+	}
+
+	return ClosestSoFar;
+}
+ /// Vehicles:
+ 	if(GetState() == PLAYER_STATE_ONFOOT) {
+		if(m_pActorPed->IsInVehicle()) {
+			m_pActorPed->GetMatrix(&mat);
+			m_pActorPed->RemoveFromVehicleAndPutAt(mat.pos.X,mat.pos.Y,mat.pos.Z);
+		}
+		return;
+	}
+
+	if( GetState() == PLAYER_STATE_DRIVER || GetState() == PLAYER_STATE_PASSENGER )
+	{
+		if(!m_pActorPed->IsInVehicle()) {
+			CVehicle *pVehicle = pVehiclePool->GetAt(m_VehicleID);
+			if(pVehicle) {
+				int iCarID = pVehiclePool->FindGtaIDFromID(m_VehicleID);
+				m_pActorPed->PutDirectlyInVehicle(iCarID,m_byteSeatID);
+			}
+		}
+	}
+  /*
+  */
+// --
+
+// SCORE BOARD
+	char szPlayerId[11];
+	char szScore[11];
+	char szPing[11];
+
+	for (x=m_iOffset; x<endplayer; x++)
+	{
+		sprintf(szPlayerId, "%d", Players[x].dwId);
+		sprintf(szScore, "%d", Players[x].iScore);
+		sprintf(szPing, "%d", Players[x].dwPing);
+
+		rectPlayerId.left++; rectPlayerId.top++;
+		m_pFont->DrawText(m_pSprite, szPlayerId, -1, &rectPlayerId, DT_SINGLELINE|DT_CENTER, D3DCOLOR_XRGB(0, 0, 0));
+		rectPlayerId.left--; rectPlayerId.top--;
+		m_pFont->DrawText(m_pSprite, szPlayerId, -1, &rectPlayerId, DT_SINGLELINE|DT_CENTER, Players[x].dwColor);
+
+  /*
+  
+  */
+		rectPlayerId.top = rectName.top = rectScore.top = rectPing.top += (LONG)(20.0f * m_fScalar);
+	}
+  // --
+  
+  // 
+  	// --- begin: HealthBar drawing... ---
+	m_pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	m_pDevice->SetRenderState(D3DRS_TEXTUREFACTOR, 0xFFFFFFFF);
+	m_pDevice->SetTexture(0, NULL);
+	m_pDevice->SetFVF(HealthBarFVF);
+
+	if (fHealth > 100.0f)
+		fHealth = 100.0f;
+	if (fHealth < 0.0f)
+		fHealth = 0.0f;
+
+	HealthBarBGVertices[0].x = HealthBarBGVertices[1].x = (0.0058f * fHealth) - 0.29f;
+
+	m_pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, HealthBarBDRVertices, sizeof(HealthBarVertices_s));
+	m_pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, HealthBarBGVertices,  sizeof(HealthBarVertices_s));
+	m_pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, HealthBarVertices,    sizeof(HealthBarVertices_s));
+	// --- end: HealthBar drawing ---
+  // --
+  
+  
+  -------------------------------
+  
+  DWORD dwWorkingSkins[] =
+{ 
+  .... 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 333, 344, 345, 346};
+  
+  -- 
+  
+  
+  //
+  
+  // -- FIX screenshots lag
+  void GetScreenshotFileName(std::string & FileName)
+{
+	std::string ModuleFileName;
+    ModuleFileName.reserve(MAX_PATH);
+    GetModuleFileName(NULL,(char *)(ModuleFileName.data()),MAX_PATH);
+    FileName = ModuleFileName.substr(0, ModuleFileName.find_last_of(":\\"));
+
+    char Buf[MAX_PATH];
+    WIN32_FIND_DATA ffd;
+    HANDLE h;
+    for (int i = 0; i < 1000; i++)
+    {
+        wsprintf(Buf, (FileName + "sa-mp-%03i.png").c_str(), i);
+        h = FindFirstFile(Buf, &ffd);
+        if(h != INVALID_HANDLE_VALUE) {   
+			FindClose(h);
+		}
+        else {   
+			break;
+		}
+    }
+    FileName = Buf;
+}
+
+// ----
+
+// SQLITE
+static cell AMX_NATIVE_CALL n_free_result(AMX* amx, cell* params)
+{
+	SQLiteResult *result;
+
+	result = (SQLiteResult *)params[1];
+	
+	if (!result)
+	{
+		logprintf(NATIVE_PREFIX "free_result() - Warning: Invalid result set\n");
+		return 0;
+	}
+
+	if (result->pResults)
+		sqlite3_free_table(result->pResults);
+	
+	if (result->szErrMsg)
+		sqlite3_free(result->szErrMsg);
+
+	free(result);
+
+	return 1;
+}
+// --
+
+
+// --------------- HASH player
+PluginReceiveResult ConnectionGraph::OnReceive(RakPeerInterface *peer, Packet *packet)
+{
+	switch (packet->data[0]) 
+	{
+	case ID_NEW_INCOMING_CONNECTION:
+		OnNewIncomingConnection(peer, packet);
+		return RR_CONTINUE_PROCESSING;
+	case ID_CONNECTION_REQUEST_ACCEPTED:
+		OnConnectionRequestAccepted(peer, packet);
+		return RR_CONTINUE_PROCESSING;
+	case ID_CONNECTION_GRAPH_REQUEST:
+		OnConnectionGraphRequest(peer, packet);
+		return RR_STOP_PROCESSING_AND_DEALLOCATE;
+	case ID_CONNECTION_GRAPH_REPLY:
+		OnConnectionGraphReply(peer, packet);
+		return RR_STOP_PROCESSING_AND_DEALLOCATE;
+	case ID_CONNECTION_GRAPH_UPDATE:
+		OnConnectionGraphUpdate(peer, packet);
+		return RR_STOP_PROCESSING_AND_DEALLOCATE;
+     
+      // PLAYER IS BANNED BY SA-MP TEAM
+	case ID_CONNECTION_PERM_BANNED:
+	/*
+	*/
+  
+void ConnectionGraph::OnNewIncomingConnection(RakPeerInterface *peer, Packet *packet, packet->playerId.hash)
+{
+	if (autoAddNewConnections==false)
+		return;
+
+	// 0 is the default groupId
+	AddNewConnection(peer, packet->playerId, 0, //
+}
+void ConnectionGraph::OnConnectionRequestAccepted(RakPeerInterface *peer, Packet *packet)
+{
+
+	AddNewConnection //
+}
+
+-------------------------------------------------------------------------------------------------
+
+
+// AC SERVER.CFG SAC 0 / 1
+void AntiCheat::Enable()
+{
+	if (m_bEnabled)
+		Disable();
+
+	CArchiveFS *pArchiveFS = (CArchiveFS*)pFileSystem;
+
+	m_bEnabled = TRUE;
+
+	char szTempPath[MAX_PATH+1];
+	GetTempPath(MAX_PATH, szTempPath);
+	GetTempFileName(szTempPath, "fla", 0, m_szRemoteACFileName);
+	/*
+       - > OnClientCheckResponse ( ? )
+  */
+}
+
+// //
+void con_players() {
+	RakServerInterface* pRak = pNetGame->GetRakServer();
+
+	if ( pRak->GetConnectedPlayers() == 0 ) // If there is no players, why continue?
+		return;
+
+	CPlayerPool* pPlayerPool = pNetGame->GetPlayerPool();
+
+	logprintf("ID\tName\tPing\tIP");
+
+	for( int i = 0; i < MAX_PLAYERS; i++)
+	{
+		if ( pPlayerPool->GetSlotState(i) == TRUE)
+		{
+			PlayerID Player = pRak->GetPlayerIDFromIndex(i);
+			in_addr in;
+			in.s_addr = Player.binaryAddress;
+
+			logprintf("%d\t%s\t%d\t%s", i, pPlayerPool->GetPlayerName(i), pRak->GetLastPing( Player ), inet_ntoa(in));
+		}
+	}
+}
+//
+
+///
+
+
